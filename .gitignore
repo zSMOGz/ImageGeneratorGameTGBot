@@ -1,0 +1,9 @@
+images/
+neiro_models/
+lfs/
+products.txt
+test_file.txt
+test.txt
+config.py
+*.txt
+*.jpg

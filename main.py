@@ -1,6 +1,6 @@
 #pip install python-telegram-bot --upgrade
 import threading as th
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, ReplyKeyboardMarkup
 from telegram.ext import (Application,
                           CallbackQueryHandler,
                           CommandHandler,
@@ -14,6 +14,7 @@ import image_generators as ig
 import keyboards as kb
 
 current_neural_network = None
+current_point_map = 1
 
 
 class ThreadWithResult(th.Thread):
@@ -32,6 +33,18 @@ class ThreadWithResult(th.Thread):
                          target=function,
                          name=name,
                          daemon=daemon)
+
+
+def build_routes_menu(buttons,
+                      n_cols,
+                      header_buttons=None,
+                      footer_buttons=None):
+    menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
+    if header_buttons:
+        menu.insert(0, [header_buttons])
+    if footer_buttons:
+        menu.append([footer_buttons])
+    return menu
 
 
 async def start(update: Update,
@@ -53,8 +66,8 @@ async def show_routes(update: Update,
                       context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
 
-    point_map = db.get_point_map(1)
-    available_routes = db.get_available_routes(1)
+    point_map = db.get_point_map(current_point_map)
+    available_routes = db.get_available_routes(current_point_map)
 
     if point_map is None:
         await context.bot.send_message(chat_id=query.message.chat.id,
@@ -87,9 +100,8 @@ async def show_routes(update: Update,
             return
 
     keyboard_buttons = []
-
+    print(available_routes)
     for route in available_routes:
-        print(route)
         keyboard_buttons.append(InlineKeyboardButton(route.name,
                                                      callback_data=route.id))
 
@@ -97,11 +109,8 @@ async def show_routes(update: Update,
         await context.bot.send_message(chat_id=query.message.chat.id,
                                        text="Ты в тупике!")
     else:
-        keyboard = [
-            keyboard_buttons
-        ]
-
-        reply_markup = InlineKeyboardMarkup(keyboard)
+        reply_markup = InlineKeyboardMarkup(build_routes_menu(keyboard_buttons,
+                                                              1))
 
         await context.bot.send_message(chat_id=query.message.chat.id,
                                        text="Куда пойдёшь?",
@@ -111,6 +120,7 @@ async def show_routes(update: Update,
 async def button(update: Update,
                  context: ContextTypes.DEFAULT_TYPE) -> None:
     global current_neural_network
+    global current_point_map
 
     await context.bot.get_updates(timeout=1000)
     query = update.callback_query
@@ -157,14 +167,18 @@ async def button(update: Update,
                                             + str(end - start))
 
         await neural_network_loaded(update, context)
-    elif query.data == show_routes.__name__:
+    else:
+        current_point_map = query.data
+        print("Номер следующего маршрута:",
+              current_point_map)
         await show_routes(update, context)
 
 
 def main():
     application = Application.builder().token(c.TG_API_TOKEN).build()
 
-    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler(start.__name__,
+                                           start))
     application.add_handler(CallbackQueryHandler(button))
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)

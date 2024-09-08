@@ -4,9 +4,12 @@
 #pip install transformers==4.22.1
 #pip install invisible_watermark accelerate safetensors
 #pip install 'huggingface_hub[cli,torch]'
-#pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
+#pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124
 #pip install --upgrade transformers accelerate
 #pip install SentencePiece
+import os
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
 import torch
 
 from diffusers import (StableCascadeCombinedPipeline,
@@ -58,8 +61,9 @@ class StableDiffusion(ImageGenerator):
         try:
             image = self.pipe(
                 prompt=prompt,
-                num_inference_steps=20,
-                prior_num_inference_steps=20,
+                negative_prompt="low quality, bad quality",
+                num_inference_steps=30,
+                prior_num_inference_steps=10,
                 prior_guidance_scale=3.0,
                 height=1024,
                 width=1024,
@@ -89,8 +93,9 @@ class Kandinsky(ImageGenerator):
         try:
             image = self.pipe(
                 prompt=prompt,
-                num_inference_steps=10,
-                prior_num_inference_steps=20,
+                negative_prompt="low quality, bad quality",
+                num_inference_steps=30,
+                prior_num_inference_steps=10,
                 prior_guidance_scale=3.0,
                 height=1024,
                 width=1024,
@@ -120,8 +125,9 @@ class StableCascade(ImageGenerator):
         try:
             image = self.pipe(
                 prompt=prompt,
-                num_inference_steps=10,
-                prior_num_inference_steps=20,
+                negative_prompt="low quality, bad quality",
+                num_inference_steps=30,
+                prior_num_inference_steps=10,
                 prior_guidance_scale=3.0,
                 height=1024,
                 width=1024,

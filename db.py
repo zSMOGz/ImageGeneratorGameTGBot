@@ -30,9 +30,16 @@ connection.create_tables([PointMap, Route], )
 
 def get_available_routes(point_map_id):
     try:
-        available_routes = (Route.select(PointMap.id, PointMap.name, PointMap.description).join(PointMap).
-                            where(PointMap.id == point_map_id
-                                  and Route.point_map_id == point_map_id).
+        join_condition = ((Route.point_map_id == PointMap.id)
+                          | (Route.another_point_map_id == PointMap.id))
+
+        available_routes = (Route.select(PointMap.id,
+                                         PointMap.name,
+                                         PointMap.description).
+                            join(PointMap, on=join_condition).
+                            where(PointMap.id != point_map_id
+                                  and (Route.point_map_id == point_map_id
+                                       or Route.another_point_map_id == point_map_id)).
                             objects())
         return available_routes
     except DoesNotExist as de:

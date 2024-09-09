@@ -1,4 +1,4 @@
-from telegram import InlineKeyboardButton
+from telegram import InlineKeyboardButton, KeyboardButton
 from enum import Enum
 
 keyboard_neural_network = [

@@ -1,11 +1,15 @@
 #pip install python-telegram-bot --upgrade
 import threading as th
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, ReplyKeyboardMarkup
+from telegram import (InlineKeyboardButton,
+                      InlineKeyboardMarkup,
+                      Update,
+                      ReplyKeyboardMarkup, KeyboardButton)
 from telegram.ext import (Application,
                           CallbackQueryHandler,
                           CommandHandler,
                           ContextTypes,
-                          )
+                          MessageHandler,
+                          filters)
 from datetime import datetime as dt
 
 import config as c
@@ -49,6 +53,11 @@ def build_routes_menu(buttons,
 
 async def start(update: Update,
                 context: ContextTypes.DEFAULT_TYPE) -> None:
+    reply_keyboard = [[KeyboardButton(text='stats')]]
+    await update.message.reply_text('Бот запущен',
+                                    reply_markup=ReplyKeyboardMarkup(reply_keyboard,
+                                                                     one_time_keyboard=True))
+
     reply_markup = InlineKeyboardMarkup(kb.keyboard_neural_network)
 
     await update.message.reply_text(text="Выберете нейросеть для генерации изображений:",
@@ -90,6 +99,8 @@ async def show_routes(update: Update,
             await context.bot.send_message(chat_id=query.message.chat.id,
                                            text="Время генерации изображения: "
                                                 + str(end - start))
+            db.add_statistic_generated(current_neural_network.model_id.split('/')[-1].split('-')[0],
+                                       time_generated=end - start)
 
             await context.bot.send_photo(chat_id=query.message.chat_id,
                                          photo=open(generate_image_path, 'rb'))
@@ -121,57 +132,92 @@ async def button(update: Update,
                  context: ContextTypes.DEFAULT_TYPE) -> None:
     global current_neural_network
     global current_point_map
+    print("Обработка нажатия")
 
     await context.bot.get_updates(timeout=1000)
     query = update.callback_query
-    await query.answer()
+    if query is not None:
+        await query.answer()
 
-    if query.data == 'stable_diffusion':
-        start = dt.now()
-        thread = ThreadWithResult(target=ig.StableDiffusion,
-                                  args=())
-        thread.start()
-        thread.join()
-        current_neural_network = thread.result
-        end = dt.now()
+        if query.data == 'stable_diffusion':
+            await context.bot.send_message(chat_id=query.message.chat.id,
+                                           text="Загрузка нейросети StableDiffusion")
+            start_time = dt.now()
+            thread = ThreadWithResult(target=ig.StableDiffusion,
+                                      args=())
+            thread.start()
+            thread.join()
+            current_neural_network = thread.result
+            end_time = dt.now()
 
-        await context.bot.send_message(chat_id=query.message.chat.id,
-                                       text="Время инициализации нейросети StableDiffusion: "
-                                            + str(end - start))
+            await context.bot.send_message(chat_id=query.message.chat.id,
+                                           text="Время инициализации нейросети StableDiffusion: "
+                                                + str(end_time - start_time))
+            neural_network_name = current_neural_network.model_id.split('/')[-1].split('-')[0]
 
-        await neural_network_loaded(update, context)
-    elif query.data == 'kandinsky':
-        start = dt.now()
-        thread = ThreadWithResult(target=ig.Kandinsky,
-                                  args=())
-        thread.start()
-        thread.join()
-        current_neural_network = thread.result
-        end = dt.now()
+            db.add_statistic_loaded(neural_network_name,
+                                    end_time - start_time)
 
-        await context.bot.send_message(chat_id=query.message.chat.id,
-                                       text="Время инициализации нейросети Kandinsky: "
-                                            + str(end - start))
+            await neural_network_loaded(update, context)
+        elif query.data == 'kandinsky':
+            await context.bot.send_message(chat_id=query.message.chat.id,
+                                           text="Загрузка нейросети Kandinsky")
+            start_time = dt.now()
+            thread = ThreadWithResult(target=ig.Kandinsky,
+                                      args=())
+            thread.start()
+            thread.join()
+            current_neural_network = thread.result
+            end_time = dt.now()
 
-        await neural_network_loaded(update, context)
-    elif query.data == 'stable_cascade':
-        start = dt.now()
-        thread = ThreadWithResult(target=ig.StableCascade,
-                                  args=())
-        thread.start()
-        thread.join()
-        current_neural_network = thread.result
-        end = dt.now()
-        await context.bot.send_message(chat_id=query.message.chat.id,
-                                       text="Время инициализации нейросети StableCascade: "
-                                            + str(end - start))
+            await context.bot.send_message(chat_id=query.message.chat.id,
+                                           text="Время инициализации нейросети Kandinsky: "
+                                                + str(end_time - start_time))
+            neural_network_name = current_neural_network.model_id.split('/')[-1].split('-')[0]
 
-        await neural_network_loaded(update, context)
+            db.add_statistic_loaded(neural_network_name,
+                                    end_time - start_time)
+
+            await neural_network_loaded(update, context)
+        elif query.data == 'stable_cascade':
+            await context.bot.send_message(chat_id=query.message.chat.id,
+                                           text="Загрузка нейросети StableCascade")
+            start_time = dt.now()
+            thread = ThreadWithResult(target=ig.StableCascade,
+                                      args=())
+            thread.start()
+            thread.join()
+            current_neural_network = thread.result
+            end_time = dt.now()
+            await context.bot.send_message(chat_id=query.message.chat.id,
+                                           text="Время инициализации нейросети StableCascade: "
+                                                + str(end_time - start_time))
+            neural_network_name = current_neural_network.model_id.split('/')[-1].split('-')[0]
+
+            db.add_statistic_loaded(neural_network_name,
+                                    end_time - start_time)
+
+            await neural_network_loaded(update, context)
+        else:
+            current_point_map = query.data
+            print("Номер следующего маршрута:",
+                  current_point_map)
+            await show_routes(update, context)
     else:
-        current_point_map = query.data
-        print("Номер следующего маршрута:",
-              current_point_map)
-        await show_routes(update, context)
+        text = context.bot.editMessageText(text="stats")
+
+        if text == 'stats':
+            await get_statistics(update, context)
+
+
+async def get_statistics(update: Update,
+                         context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+
+    statistics_data = db.get_statistic()
+    await context.bot.send_message(chat_id=query.message.chat.id,
+                                   text="Статистика: "
+                                        + statistics_data)
 
 
 def main():
@@ -180,6 +226,11 @@ def main():
     application.add_handler(CommandHandler(start.__name__,
                                            start))
     application.add_handler(CallbackQueryHandler(button))
+
+    application.add_handler(CommandHandler("stats",
+                                           get_statistics))
+
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, button))
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 

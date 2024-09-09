@@ -62,8 +62,8 @@ class StableDiffusion(ImageGenerator):
             image = self.pipe(
                 prompt=prompt,
                 negative_prompt="low quality, bad quality",
-                num_inference_steps=30,
-                prior_num_inference_steps=10,
+                num_inference_steps=50,
+                prior_num_inference_steps=30,
                 prior_guidance_scale=3.0,
                 height=1024,
                 width=1024,
@@ -94,8 +94,8 @@ class Kandinsky(ImageGenerator):
             image = self.pipe(
                 prompt=prompt,
                 negative_prompt="low quality, bad quality",
-                num_inference_steps=30,
-                prior_num_inference_steps=10,
+                num_inference_steps=50,
+                prior_num_inference_steps=30,
                 prior_guidance_scale=3.0,
                 height=1024,
                 width=1024,
@@ -126,8 +126,8 @@ class StableCascade(ImageGenerator):
             image = self.pipe(
                 prompt=prompt,
                 negative_prompt="low quality, bad quality",
-                num_inference_steps=30,
-                prior_num_inference_steps=10,
+                num_inference_steps=50,
+                prior_num_inference_steps=30,
                 prior_guidance_scale=3.0,
                 height=1024,
                 width=1024,

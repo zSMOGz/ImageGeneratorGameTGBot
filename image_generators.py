@@ -4,7 +4,7 @@
 #pip install transformers==4.22.1
 #pip install invisible_watermark accelerate safetensors
 #pip install 'huggingface_hub[cli,torch]'
-#pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124
+#pip install  а torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124
 #pip install --upgrade transformers accelerate
 #pip install SentencePiece
 import os
@@ -17,7 +17,6 @@ from diffusers import (StableCascadeCombinedPipeline,
                        DiffusionPipeline,
                        DDIMScheduler)
 from huggingface_hub import login
-from PIL import Image
 from config import HAGGINGFAVE_TOKEN
 
 login(token=HAGGINGFAVE_TOKEN)
@@ -26,6 +25,19 @@ IMAGE_PATH = "images/"
 IMAGE_NAME_SD = "image_sd.png"
 IMAGE_NAME_KD = "image_kd.png"
 IMAGE_NAME_SK = "image_sk.png"
+
+NEURO_PATH = "./neuro_models/"
+STABLE_DIFFUSION_PATH = "stable-diffusion-xl-base-1.0"
+KANDINSKY_PATH = "kandinsky-2-1"
+STABLE_CASCADE_PATH = "stable-cascade"
+
+CUDA = "cuda"
+NEGATIVE_PROMPT = "low quality, bad quality"
+NUM_INFERENCE_STEPS = 50
+PRIOR_NUM_INFERENCE_STEPS = 30
+PRIOR_GUIDANCE_SCALE = 3.0
+IMAGE_HEIGHT = 1024
+IMAGE_WIDTH = 1024
 
 
 class ImageGenerator:
@@ -45,13 +57,13 @@ class ImageGenerator:
 
 class StableDiffusion(ImageGenerator):
     def __init__(self):
-        self.model_id = "./neiro_models/stable-diffusion-xl-base-1.0"
+        self.model_id = NEURO_PATH + STABLE_DIFFUSION_PATH
         self.ddim = DDIMScheduler.from_pretrained(self.model_id,
                                                   subfolder="scheduler")
         self.pipe = DiffusionPipeline.from_pretrained(self.model_id,
                                                       ddim=self.ddim,
                                                       torch_dtype=torch.float16)
-        self.pipe = self.pipe.to("cuda")
+        self.pipe = self.pipe.to(CUDA)
         super().__init__(self.model_id,
                          self.pipe,
                          image_name=IMAGE_NAME_SD)
@@ -61,13 +73,13 @@ class StableDiffusion(ImageGenerator):
         try:
             image = self.pipe(
                 prompt=prompt,
-                negative_prompt="low quality, bad quality",
-                num_inference_steps=50,
-                prior_num_inference_steps=30,
-                prior_guidance_scale=3.0,
-                height=1024,
-                width=1024,
-                guidance_scale=7.0,
+                negative_prompt=NEGATIVE_PROMPT,
+                num_inference_steps=NUM_INFERENCE_STEPS,
+                prior_num_inference_steps=PRIOR_NUM_INFERENCE_STEPS,
+                prior_guidance_scale=PRIOR_GUIDANCE_SCALE,
+                height=IMAGE_HEIGHT,
+                width=IMAGE_WIDTH,
+                #guidance_scale=7.0,
             ).images[0]
 
             image.save(IMAGE_PATH + self.image_name)
@@ -80,10 +92,10 @@ class StableDiffusion(ImageGenerator):
 
 class Kandinsky(ImageGenerator):
     def __init__(self):
-        self.model_id = "./neiro_models/kandinsky-2-1"
+        self.model_id = NEURO_PATH + KANDINSKY_PATH
         self.pipe = AutoPipelineForText2Image.from_pretrained(self.model_id,
                                                               torch_dtype=torch.float16)
-        self.pipe = self.pipe.to("cuda")
+        self.pipe = self.pipe.to(CUDA)
         super().__init__(self.model_id,
                          self.pipe,
                          image_name=IMAGE_NAME_KD)
@@ -93,12 +105,12 @@ class Kandinsky(ImageGenerator):
         try:
             image = self.pipe(
                 prompt=prompt,
-                negative_prompt="low quality, bad quality",
-                num_inference_steps=50,
-                prior_num_inference_steps=30,
-                prior_guidance_scale=3.0,
-                height=1024,
-                width=1024,
+                negative_prompt=NEGATIVE_PROMPT,
+                num_inference_steps=NUM_INFERENCE_STEPS,
+                prior_num_inference_steps=PRIOR_NUM_INFERENCE_STEPS,
+                prior_guidance_scale=PRIOR_GUIDANCE_SCALE,
+                height=IMAGE_HEIGHT,
+                width=IMAGE_WIDTH,
             ).images[0]
 
             image.save(IMAGE_PATH + self.image_name)
@@ -111,11 +123,11 @@ class Kandinsky(ImageGenerator):
 
 class StableCascade(ImageGenerator):
     def __init__(self):
-        self.model_id = "./neiro_models/stable-cascade"
+        self.model_id = NEURO_PATH + STABLE_CASCADE_PATH
         self.pipe = StableCascadeCombinedPipeline.from_pretrained(self.model_id,
                                                                   variant="bf16",
                                                                   torch_dtype=torch.bfloat16)
-        self.pipe = self.pipe.to("cuda")
+        self.pipe = self.pipe.to(CUDA)
         super().__init__(self.model_id,
                          self.pipe,
                          image_name=IMAGE_NAME_SK)
@@ -125,12 +137,12 @@ class StableCascade(ImageGenerator):
         try:
             image = self.pipe(
                 prompt=prompt,
-                negative_prompt="low quality, bad quality",
-                num_inference_steps=50,
-                prior_num_inference_steps=30,
-                prior_guidance_scale=3.0,
-                height=1024,
-                width=1024,
+                negative_prompt=NEGATIVE_PROMPT,
+                num_inference_steps=NUM_INFERENCE_STEPS,
+                prior_num_inference_steps=PRIOR_NUM_INFERENCE_STEPS,
+                prior_guidance_scale=PRIOR_GUIDANCE_SCALE,
+                height=IMAGE_HEIGHT,
+                width=IMAGE_WIDTH,
             ).images[0]
 
             image.save(IMAGE_PATH + self.image_name)

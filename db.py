@@ -1,5 +1,8 @@
 import peewee
+import datetime as dt
+
 from peewee import *
+
 
 connection = SqliteDatabase('routes.db')
 cursor = connection.cursor()
@@ -11,7 +14,6 @@ class BaseModel(Model):
 
 
 class PointMap(BaseModel):
-    id = AutoField(column_name='id')
     name = CharField(column_name='name')
     description = TextField(column_name='description')
     ai_description = TextField(column_name='ai_description')
@@ -27,7 +29,6 @@ class Route(BaseModel):
 
 
 class Statistic(BaseModel):
-    id = IntegerField(column_name='id')
     neural_network_name = CharField(column_name='neural_network_name')
     time_generated = DateTimeField(column_name='time_generated',
                                    null=True)
@@ -68,8 +69,8 @@ def get_point_map(point_map_id):
 def get_statistic():
     try:
         statistic = (Statistic.select(Statistic.neural_network_name,
-                                     peewee.fn.AVG(Statistic.time_generated),
-                                     peewee.fn.AVG(Statistic.time_loaded))
+                                      peewee.fn.AVG(Statistic.time_generated),
+                                      peewee.fn.AVG(Statistic.time_loaded))
                               .group_by(Statistic.neural_network_name)
                               .order_by(Statistic.neural_network_name)
                               .objects())
@@ -79,7 +80,8 @@ def get_statistic():
         print(de)
 
 
-def add_statistic_generated(neural_network_name, time_generated):
+def add_statistic_generated(neural_network_name: str,
+                            time_generated: dt):
     try:
         Statistic.create(neural_network_name=neural_network_name,
                          time_generated=time_generated)
@@ -87,7 +89,8 @@ def add_statistic_generated(neural_network_name, time_generated):
         print(ie)
 
 
-def add_statistic_loaded(neural_network_name, time_loaded):
+def add_statistic_loaded(neural_network_name: str,
+                         time_loaded: dt):
     try:
         Statistic.create(neural_network_name=neural_network_name,
                          time_loaded=time_loaded)

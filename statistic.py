@@ -10,6 +10,11 @@ INDEX_NAME = "Номер измерения"
 
 
 async def get_lists_by_neural_networks(statistics_detailed_data):
+    """
+    Получение статистики по времени генерации изображения и загрузки нейросетей
+    :param statistics_detailed_data: Статистика по времени генерации изображения и загрузки нейросетей из БД
+    :return: Список списков времени генерации изображений и скорости загрузки нейросетей, и списков индексов
+    """
     lists_by_neural_networks = []
     current_neural_network_list = []
     last_neural_network_name = None
@@ -32,6 +37,13 @@ async def get_lists_by_neural_networks(statistics_detailed_data):
 
 
 async def get_time_generated_list_and_indexes(lists_by_neural_networks):
+    """
+    Получение списка времени генерации изображения, время загрузки нейросетей, и списка индексов
+    :param lists_by_neural_networks: Список списков времени генерации изображения, времени загрузки нейросетей,
+    и списков индексов
+    :return: Список времени генерации изображения, времени загрузки нейросетей,
+    и списков индексов
+    """
     lists_time_generated = []
     lists_time_generated_indexes = []
     lists_time_loaded = []
@@ -68,13 +80,23 @@ async def get_time_generated_list_and_indexes(lists_by_neural_networks):
             lists_time_loaded_indexes)
 
 
-async def get_create_graph(list_indexes,
-                           lists_values,
-                           title,
-                           xlabel,
-                           ylabel,
-                           xticks,
-                           yticks):
+async def create_graph(list_indexes,
+                       lists_values,
+                       title,
+                       xlabel,
+                       ylabel,
+                       xticks,
+                       yticks):
+    """
+    Создание графика скорости генерации изображения или загрузки нейросети
+    :param list_indexes: список индексов измерений
+    :param lists_values: список значений
+    :param title: заголовок графика
+    :param xlabel: заголовок оси х
+    :param ylabel: заголовок оси y
+    :param xticks: список значений, отмечаемых на оси х
+    :param yticks: список значений, отмечаемых на оси y
+    """
     plt.plot(list_indexes,
              lists_values)
     plt.title(title)

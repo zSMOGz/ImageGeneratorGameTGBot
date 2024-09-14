@@ -41,6 +41,9 @@ IMAGE_WIDTH = 1024
 
 
 class ImageGenerator:
+    """
+    Основной класс для генерации изображений
+    """
     def __init__(self,
                  model_id,
                  pipe,
@@ -52,10 +55,18 @@ class ImageGenerator:
 
     def generate_image(self,
                        prompt):
+        """
+        Генерация изображения по текстовому описанию
+        :param prompt: Текстовое описание
+        :return: Путь к изображению на сервере
+        """
         pass
 
 
 class StableDiffusion(ImageGenerator):
+    """
+    Генератор изображений с использованием Stable Diffusion
+    """
     def __init__(self):
         self.model_id = NEURO_PATH + STABLE_DIFFUSION_PATH
         self.ddim = DDIMScheduler.from_pretrained(self.model_id,
@@ -91,6 +102,9 @@ class StableDiffusion(ImageGenerator):
 
 
 class Kandinsky(ImageGenerator):
+    """
+    Генератор изображений с использованием нейросети Kandinsky
+    """
     def __init__(self):
         self.model_id = NEURO_PATH + KANDINSKY_PATH
         self.pipe = AutoPipelineForText2Image.from_pretrained(self.model_id,
@@ -122,6 +136,9 @@ class Kandinsky(ImageGenerator):
 
 
 class StableCascade(ImageGenerator):
+    """
+    Генератор изображений с использованием нейросети Stable Cascade
+    """
     def __init__(self):
         self.model_id = NEURO_PATH + STABLE_CASCADE_PATH
         self.pipe = StableCascadeCombinedPipeline.from_pretrained(self.model_id,

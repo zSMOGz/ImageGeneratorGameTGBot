@@ -346,23 +346,23 @@ async def get_statistics(message: Message):
          time_loaded,
          time_generated) = list[index]
 
-        graph_file_path = await st.get_create_graph(list_time_generated_indexes,
-                                                    list_time_generated,
-                                                    st.TIME_GENERATED_NAME + " " + neural_network_name,
-                                                    st.INDEX_NAME,
-                                                    st.TIME_GENERATED_NAME,
-                                                    list_time_generated_indexes,
-                                                    list_time_generated)
+        graph_file_path = await st.create_graph(list_time_generated_indexes,
+                                                list_time_generated,
+                                                st.TIME_GENERATED_NAME + " " + neural_network_name,
+                                                st.INDEX_NAME,
+                                                st.TIME_GENERATED_NAME,
+                                                list_time_generated_indexes,
+                                                list_time_generated)
         await bot.send_photo(chat_id=message.chat.id,
                              photo=FSInputFile(graph_file_path))
 
-        graph_file_path = await st.get_create_graph(list_time_loaded_indexes,
-                                                    list_time_loaded,
-                                                    st.TIME_LOADED_NAME + " " + neural_network_name,
-                                                    st.INDEX_NAME,
-                                                    st.TIME_LOADED_NAME,
-                                                    list_time_loaded_indexes,
-                                                    list_time_loaded)
+        graph_file_path = await st.create_graph(list_time_loaded_indexes,
+                                                list_time_loaded,
+                                                st.TIME_LOADED_NAME + " " + neural_network_name,
+                                                st.INDEX_NAME,
+                                                st.TIME_LOADED_NAME,
+                                                list_time_loaded_indexes,
+                                                list_time_loaded)
 
         await bot.send_photo(chat_id=message.chat.id,
                              photo=FSInputFile(graph_file_path))

@@ -59,10 +59,12 @@ async def get_neural_network_name(neural_network):
     if neural_network is None:
         return None
     else:
-        if neural_network.model_id.startswith('kandinsky'):
+        if neural_network.model_id.find('kandinsky') >= 0:
+            print("kandinsky: " + neural_network.model_id.split('/')[-1].split('-')[0])
             return neural_network.model_id.split('/')[-1].split('-')[0]
         else:
             parts_name = neural_network.model_id.split('/')[-1].split('-')
+            print(parts_name)
             return parts_name[0] + '_' + parts_name[1]
 
 
@@ -182,7 +184,7 @@ async def show_routes_handler(message_or_call):
                 await message_or_call.answer(text)
 
             name = await get_neural_network_name(current_neural_network)
-
+            print("name" + name)
             db.add_statistic_generated(name,
                                        time_generate_in_seconds)
 
@@ -311,15 +313,19 @@ async def get_statistics(message: Message):
      lists_time_loaded_indexes) = await st.get_time_generated_list_and_indexes(lists_by_neural_networks)
 
     index = 0
-    for _ in lists_by_neural_networks:
+    for list in lists_by_neural_networks:
         list_time_generated = lists_time_generated[index]
         list_time_generated_indexes = lists_time_generated_indexes[index]
         list_time_loaded = lists_time_loaded[index]
         list_time_loaded_indexes = lists_time_loaded_indexes[index]
 
+        (neural_network_name,
+         time_loaded,
+         time_generated) = list[index]
+
         graph_file_path = await st.get_create_graph(list_time_generated_indexes,
                                                     list_time_generated,
-                                                    st.TIME_GENERATED_NAME,
+                                                    st.TIME_GENERATED_NAME + " " + neural_network_name,
                                                     st.INDEX_NAME,
                                                     st.TIME_GENERATED_NAME,
                                                     list_time_generated_indexes,
@@ -330,7 +336,7 @@ async def get_statistics(message: Message):
 
         graph_file_path = await st.get_create_graph(list_time_loaded_indexes,
                                                     list_time_loaded,
-                                                    st.TIME_LOADED_NAME,
+                                                    st.TIME_LOADED_NAME + " " + neural_network_name,
                                                     st.INDEX_NAME,
                                                     st.TIME_LOADED_NAME,
                                                     list_time_loaded_indexes,

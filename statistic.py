@@ -77,11 +77,11 @@ async def get_create_graph(list_indexes,
                            yticks):
     plt.plot(list_indexes,
              lists_values)
-    plt.title(TIME_GENERATED_NAME)
-    plt.xlabel(INDEX_NAME)
-    plt.ylabel(TIME_GENERATED_NAME)
-    plt.xticks(list_indexes)
-    plt.yticks(lists_values)
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.xticks(xticks)
+    plt.yticks(yticks)
     plt.savefig(STATS_PATH + GRAPH_NAME)
     plt.clf()
 

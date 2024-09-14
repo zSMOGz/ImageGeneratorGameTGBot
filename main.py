@@ -22,6 +22,9 @@ dp = Dispatcher(storage=MemoryStorage())
 
 
 class ThreadWithResult(th.Thread):
+    """
+    Класс для создания потоков, возвращающих результат выполнения функции
+    """
     def __init__(self,
                  group=None,
                  target=None,
@@ -41,12 +44,20 @@ class ThreadWithResult(th.Thread):
 
 
 def build_routes_menu(buttons,
-                      n_cols,
+                      count_columns,
                       header_buttons=None,
                       footer_buttons=None):
-    menu = [buttons[i:i + n_cols] for i in range(0,
-                                                 len(buttons),
-                                                 n_cols)]
+    """
+    Функция создания меню, выравнивающая кнопки в зависимости от указанного количества столбцов
+    :param buttons: Массив кнопок
+    :param count_columns: Количество столбцов
+    :param header_buttons: Кнопки заголовка
+    :param footer_buttons: Кнопки под заголовком
+    :return: Выравненные кнопки
+    """
+    menu = [buttons[i:i + count_columns] for i in range(0,
+                                                        len(buttons),
+                                                        count_columns)]
     if header_buttons:
         menu.insert(0,
                     [header_buttons])
@@ -56,20 +67,34 @@ def build_routes_menu(buttons,
 
 
 async def get_neural_network_name(neural_network):
+    """
+    Функция возвращает имя нейронной сети из базы данных
+    :param neural_network: Нейронная сеть
+    :return: Имя нейронной сети
+    """
+    _slash = '/'
+    _minus = '-'
+    _underscore = '_'
+    _kandinsky = 'kandinsky'
+
     if neural_network is None:
         return None
     else:
-        if neural_network.model_id.find('kandinsky') >= 0:
-            print("kandinsky: " + neural_network.model_id.split('/')[-1].split('-')[0])
-            return neural_network.model_id.split('/')[-1].split('-')[0]
+        if neural_network.model_id.find(_kandinsky) >= 0:
+            return neural_network.model_id.split(_slash)[-1].split(_minus)[0]
         else:
-            parts_name = neural_network.model_id.split('/')[-1].split('-')
-            print(parts_name)
-            return parts_name[0] + '_' + parts_name[1]
+            parts_name = neural_network.model_id.split(_slash)[-1].split(_minus)
+            return parts_name[0] + _underscore + parts_name[1]
 
 
 async def load_neural_network(neural_network_name: str,
                               call: CallbackQuery):
+    """
+    Функция загрузки нейронной сети в память компьютера
+    :param neural_network_name: Название нейронной сети
+    :param call: Запрос
+    :return: Ошибка при загрузке
+    """
     global current_neural_network
     global current_point_map
 
@@ -114,6 +139,12 @@ async def load_neural_network(neural_network_name: str,
 
 async def call_to_message(call: CallbackQuery,
                           text: str):
+    """
+    Функция преобразования сообщения из запроса
+    :param call: Запрос
+    :param text: Текст сообщения
+    :return: Сообщение
+    """
     message = Message(
         message_id=call.message.message_id,
         from_user=call.from_user,
@@ -124,30 +155,40 @@ async def call_to_message(call: CallbackQuery,
     return message
 
 
-async def show_routes_handler(message_or_call):
+@dp.message(Command(tx.COMMAND_START))
+async def start(call: CallbackQuery):
+    """"
+    Функция запуска бота, предоставляет выбор нейронной сети и добавляет кнопку статистики
+    """
+    await call.answer(tx.BOT_START,
+                      reply_markup=kb.stats_kb)
+
+    await call.answer(text=tx.NEURO_SELECT,
+                      reply_markup=kb.neural_network_kb)
+
+
+
+@dp.message(Command(tx.COMMAND_SHOW_ROUTES))
+async def show_routes(message: Message):
+    """
+    Функция отображения маршрутов
+    :param message: Сообщение
+    """
     point_map = db.get_point_map(current_point_map)
     available_routes = db.get_available_routes(current_point_map)
 
     if point_map is None:
-        await message_or_call.answer(tx.ROUTES_UNAVAILABLE)
+        await message.answer(tx.ROUTES_UNAVAILABLE)
         return
 
-    if isinstance(message_or_call, Message):
-        await bot.send_message(chat_id=message_or_call.chat.id,
-                               text=point_map.name)
-        await bot.send_message(chat_id=message_or_call.chat.id,
-                               text=point_map.description)
-    else:
-        await message_or_call.answer(point_map.name)
-        await message_or_call.answer(point_map.description)
+    await bot.send_message(chat_id=message.chat.id,
+                           text=point_map.name)
+    await bot.send_message(chat_id=message.chat.id,
+                           text=point_map.description)
 
     if point_map.ai_description is None:
-        if isinstance(message_or_call, Message):
-            await bot.send_message(chat_id=message_or_call.chat.id,
-                                   text=tx.ROUTES_WITHOUT_DESCRIPTION)
-        else:
-            await bot.send_message(chat_id=message_or_call.message.chat.id,
-                                   text=tx.ROUTES_WITHOUT_DESCRIPTION)
+        await bot.send_message(chat_id=message.chat.id,
+                               text=tx.ROUTES_WITHOUT_DESCRIPTION)
     else:
         try:
             start_time = db.dt.datetime.now()
@@ -157,12 +198,9 @@ async def show_routes_handler(message_or_call):
 
             i = 0
             text = (tx.GENERATION_IN_PROCESS + f"{i}" + tx.TIME_UNITS)
-            if isinstance(message_or_call, Message):
-                load_message = await bot.send_message(chat_id=message_or_call.chat.id,
-                                                      text=text)
-            else:
-                load_message = await bot.send_message(chat_id=message_or_call.message.chat.id,
-                                                      text=text)
+
+            load_message = await bot.send_message(chat_id=message.chat.id,
+                                                  text=text)
             while thread.is_alive():
                 i += 1
                 await asyncio.sleep(1)
@@ -177,29 +215,20 @@ async def show_routes_handler(message_or_call):
             time_generate_in_seconds = (end_time - start_time).total_seconds()
 
             text = (tx.GENERATION_TIME + str(time_generate_in_seconds) + tx.TIME_UNITS)
-            if isinstance(message_or_call, Message):
-                await bot.send_message(chat_id=message_or_call.chat.id,
-                                       text=text)
-            else:
-                await message_or_call.answer(text)
+
+            await bot.send_message(chat_id=message.chat.id,
+                                   text=text)
 
             name = await get_neural_network_name(current_neural_network)
-            print("name" + name)
             db.add_statistic_generated(name,
                                        time_generate_in_seconds)
 
-            if isinstance(message_or_call, Message):
-                await bot.send_photo(chat_id=message_or_call.chat.id,
-                                     photo=FSInputFile(generate_image_path))
-            else:
-                await message_or_call.answer_photo(photo=FSInputFile(generate_image_path))
+            await bot.send_photo(chat_id=message.chat.id,
+                                 photo=FSInputFile(generate_image_path))
         except Exception as e:
             print(e)
-            if isinstance(message_or_call, Message):
-                await bot.send_message(chat_id=message_or_call.chat.id,
-                                       text=tx.GENERATION_ERROR)
-            else:
-                await message_or_call.answer(tx.GENERATION_ERROR)
+            await bot.send_message(chat_id=message.chat.id,
+                                   text=tx.GENERATION_ERROR)
             return
 
     keyboard_buttons = []
@@ -209,44 +238,22 @@ async def show_routes_handler(message_or_call):
                                                      callback_data=str(route.id)))
 
     if keyboard_buttons is None:
-        if isinstance(message_or_call, Message):
-            await bot.send_message(chat_id=message_or_call.chat.id,
-                                   text=tx.ROUTES_UNAVAILABLE)
-        else:
-            await message_or_call.answer(tx.ROUTES_UNAVAILABLE)
+        await bot.send_message(chat_id=message.chat.id,
+                               text=tx.ROUTES_UNAVAILABLE)
     else:
         keyboard_markup = InlineKeyboardMarkup(inline_keyboard=build_routes_menu(keyboard_buttons,
                                                                                  1))
-        if isinstance(message_or_call, Message):
-            await bot.send_message(chat_id=message_or_call.chat.id,
-                                   text=tx.ROUTES_ANSWER,
-                                   reply_markup=keyboard_markup)
-        else:
-            await message_or_call.answer(text=tx.ROUTES_ANSWER,
-                                         reply_markup=keyboard_markup)
-
-
-@dp.message(Command(tx.COMMAND_START))
-async def start(call: CallbackQuery):
-    await call.answer(tx.BOT_START,
-                      reply_markup=kb.start_kb)
-
-    await call.answer(text=tx.NEURO_SELECT,
-                      reply_markup=kb.neural_network_kb)
-
-
-@dp.message(Command(tx.COMMAND_SHOW_ROUTES))
-async def show_routes(message: Message):
-    await show_routes_handler(message)
-
-
-@dp.callback_query(F.data == kb.BUTTON_SHOW_ROUTES_CALL)
-async def show_routes(call: CallbackQuery):
-    await show_routes_handler(call)
+        await bot.send_message(chat_id=message.chat.id,
+                               text=tx.ROUTES_ANSWER,
+                               reply_markup=keyboard_markup)
 
 
 @dp.callback_query(F.data == kb.BUTTON_STABLE_DIFFUSION_CALL)
 async def stable_diffusion(call: CallbackQuery):
+    """
+    Функция загрузки нейронной сети Stable Diffusion
+    :param call: Запрос
+    """
     await load_neural_network(kb.BUTTON_STABLE_DIFFUSION_CALL,
                               call)
 
@@ -257,6 +264,10 @@ async def stable_diffusion(call: CallbackQuery):
 
 @dp.callback_query(F.data == kb.BUTTON_KANDINSKY_CALL)
 async def kandinsky(call: CallbackQuery):
+    """
+    Функция загрузки нейронной сети Kandinsky
+    :param call: Запрос
+    """
     await load_neural_network(kb.BUTTON_KANDINSKY_CALL,
                               call)
 
@@ -267,6 +278,10 @@ async def kandinsky(call: CallbackQuery):
 
 @dp.callback_query(F.data == kb.BUTTON_STABLE_CASCADE_CALL)
 async def stable_cascade(call: CallbackQuery):
+    """
+    Функция загрузки нейронной сети Stable Cascade
+    :param call: Запрос
+    """
     await load_neural_network(kb.BUTTON_STABLE_CASCADE_CALL,
                               call)
     message = await call_to_message(call,
@@ -276,17 +291,25 @@ async def stable_cascade(call: CallbackQuery):
 
 @dp.callback_query()
 async def next_route(call: CallbackQuery):
+    """
+    Функция перехода к следующему маршруту
+    :param call: Запрос
+    """
     global current_point_map
     current_point_map = call.data
-    print(current_point_map)
+
     message = await call_to_message(call,
                                     tx.COMMAND_SHOW_ROUTES)
 
-    await show_routes_handler(message)
+    await show_routes(message)
 
 
 @dp.message(lambda message: message.text == kb.BUTTON_STATS)
 async def get_statistics(message: Message):
+    """
+    Статистика загрузки нейронных сетей, и времени создания изображений
+    :param message: Сообщение
+    """
     statistics_data = db.get_statistic()
     text = ""
 
@@ -330,9 +353,8 @@ async def get_statistics(message: Message):
                                                     st.TIME_GENERATED_NAME,
                                                     list_time_generated_indexes,
                                                     list_time_generated)
-        if isinstance(message, Message):
-            await bot.send_photo(chat_id=message.chat.id,
-                                 photo=FSInputFile(graph_file_path))
+        await bot.send_photo(chat_id=message.chat.id,
+                             photo=FSInputFile(graph_file_path))
 
         graph_file_path = await st.get_create_graph(list_time_loaded_indexes,
                                                     list_time_loaded,
@@ -342,14 +364,16 @@ async def get_statistics(message: Message):
                                                     list_time_loaded_indexes,
                                                     list_time_loaded)
 
-        if isinstance(message, Message):
-            await bot.send_photo(chat_id=message.chat.id,
-                                 photo=FSInputFile(graph_file_path))
+        await bot.send_photo(chat_id=message.chat.id,
+                             photo=FSInputFile(graph_file_path))
 
         index += 1
 
 
 async def main():
+    """
+    Запуск бота
+    """
     await bot.get_updates(timeout=100)
     await dp.start_polling(bot,
                            skip_updates=True)

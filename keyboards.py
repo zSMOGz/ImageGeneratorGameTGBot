@@ -24,7 +24,7 @@ neural_network_kb = InlineKeyboardMarkup(
     ], resize_keyboard=True
 )
 
-start_kb = ReplyKeyboardMarkup(
+stats_kb = ReplyKeyboardMarkup(
     keyboard=[
         [
             KeyboardButton(text=BUTTON_STATS)

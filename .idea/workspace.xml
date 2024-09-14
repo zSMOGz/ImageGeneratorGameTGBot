@@ -4,16 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="027259d9-cd33-4365-8352-c34e3fa310c5" name="Changes" comment="Неработающая версия, проблемы с обработкой нажатия кнопки основного меню">
-      <change afterPath="$PROJECT_DIR$/texts.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+    <list default="true" id="027259d9-cd33-4365-8352-c34e3fa310c5" name="Changes" comment="Перенос функционала на aiogram и рефакторинг текстовых переменных">
+      <change afterPath="$PROJECT_DIR$/statistic.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/db.py" beforeDir="false" afterPath="$PROJECT_DIR$/db.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image_generators.py" beforeDir="false" afterPath="$PROJECT_DIR$/image_generators.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/keyboards.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboards.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes.db" beforeDir="false" afterPath="$PROJECT_DIR$/routes.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/texts.py" beforeDir="false" afterPath="$PROJECT_DIR$/texts.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -98,7 +95,15 @@
       <option name="project" value="LOCAL" />
       <updated>1725901377442</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Перенос функционала на aiogram и рефакторинг текстовых переменных">
+      <option name="closed" value="true" />
+      <created>1726247324095</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1726247324095</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -110,6 +115,7 @@
     <MESSAGE value="Main functionality" />
     <MESSAGE value="Исправление ошибок" />
     <MESSAGE value="Неработающая версия, проблемы с обработкой нажатия кнопки основного меню" />
-    <option name="LAST_COMMIT_MESSAGE" value="Неработающая версия, проблемы с обработкой нажатия кнопки основного меню" />
+    <MESSAGE value="Перенос функционала на aiogram и рефакторинг текстовых переменных" />
+    <option name="LAST_COMMIT_MESSAGE" value="Перенос функционала на aiogram и рефакторинг текстовых переменных" />
   </component>
 </project>

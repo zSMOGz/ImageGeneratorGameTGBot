@@ -69,8 +69,8 @@ def get_point_map(point_map_id):
 def get_statistic():
     try:
         statistic = (Statistic.select(Statistic.neural_network_name,
-                                      peewee.fn.AVG(Statistic.time_generated),
-                                      peewee.fn.AVG(Statistic.time_loaded))
+                                      peewee.fn.AVG(Statistic.time_generated).alias('time_generated'),
+                                      peewee.fn.AVG(Statistic.time_loaded).alias('time_loaded'))
                               .group_by(Statistic.neural_network_name)
                               .order_by(Statistic.neural_network_name)
                               .objects())
@@ -80,8 +80,21 @@ def get_statistic():
         print(de)
 
 
+def get_statistic_detailed():
+    try:
+        statistic = (Statistic.select(Statistic.neural_network_name,
+                                      Statistic.time_generated,
+                                      Statistic.time_loaded)
+                     .order_by(Statistic.neural_network_name)
+                     .objects())
+
+        return statistic
+    except DoesNotExist as de:
+        print(de)
+
+
 def add_statistic_generated(neural_network_name: str,
-                            time_generated: dt):
+                            time_generated: float):
     try:
         Statistic.create(neural_network_name=neural_network_name,
                          time_generated=time_generated)
@@ -90,7 +103,7 @@ def add_statistic_generated(neural_network_name: str,
 
 
 def add_statistic_loaded(neural_network_name: str,
-                         time_loaded: dt):
+                         time_loaded: float):
     try:
         Statistic.create(neural_network_name=neural_network_name,
                          time_loaded=time_loaded)

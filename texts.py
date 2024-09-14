@@ -17,7 +17,6 @@ ROUTES_ANSWER = "Куда пойдёшь?"
 
 COMMAND_START = "start"
 COMMAND_SHOW_ROUTES = "show_routes"
-COMMAND_STATISTICS = "Статистика"
 COMMAND_STATISTICS_TEXT = "Статистика: "
 
 MAIN_MODULE_NAME = "__main__"

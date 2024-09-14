@@ -12,6 +12,7 @@ import db
 import image_generators as ig
 import keyboards as kb
 import texts as tx
+import statistic as st
 
 current_neural_network = None
 current_point_map = 1
@@ -39,12 +40,6 @@ class ThreadWithResult(th.Thread):
                          daemon=daemon)
 
 
-def get_datetime(date,
-                 time):
-    return db.dt.datetime.strptime("{} {}".format(date, time),
-                                   "%Y-%m-%d %H:%M:%S")
-
-
 def build_routes_menu(buttons,
                       n_cols,
                       header_buttons=None,
@@ -64,7 +59,11 @@ async def get_neural_network_name(neural_network):
     if neural_network is None:
         return None
     else:
-        return neural_network.model_id.split('/')[-1].split('-')[0]
+        if neural_network.model_id.startswith('kandinsky'):
+            return neural_network.model_id.split('/')[-1].split('-')[0]
+        else:
+            parts_name = neural_network.model_id.split('/')[-1].split('-')
+            return parts_name[0] + '_' + parts_name[1]
 
 
 async def load_neural_network(neural_network_name: str,
@@ -102,14 +101,13 @@ async def load_neural_network(neural_network_name: str,
     await load_message.delete()
     current_neural_network = thread.result
     end_time = db.dt.datetime.now()
-    td = end_time - start_time
+    time_load_in_seconds = (end_time - start_time).total_seconds()
 
     await bot.send_message(chat_id=call.message.chat.id,
                            text=tx.NEURO_INIT_TIME
-                           + str(td))
+                           + str(time_load_in_seconds))
     db.add_statistic_loaded(neural_network_name,
-                            get_datetime(db.dt.date.today(),
-                                         str(td).split(".")[0]))
+                            time_load_in_seconds)
 
 
 async def call_to_message(call: CallbackQuery,
@@ -122,14 +120,6 @@ async def call_to_message(call: CallbackQuery,
         text=text
     )
     return message
-
-@dp.message(Command(tx.COMMAND_START))
-async def start(call: CallbackQuery):
-    await call.answer(tx.BOT_START,
-                      reply_markup=kb.start_kb)
-
-    await call.answer(text=tx.NEURO_SELECT,
-                      reply_markup=kb.neural_network_kb)
 
 
 async def show_routes_handler(message_or_call):
@@ -146,7 +136,6 @@ async def show_routes_handler(message_or_call):
         await bot.send_message(chat_id=message_or_call.chat.id,
                                text=point_map.description)
     else:
-        print("Не сообещение")
         await message_or_call.answer(point_map.name)
         await message_or_call.answer(point_map.description)
 
@@ -157,7 +146,6 @@ async def show_routes_handler(message_or_call):
         else:
             await bot.send_message(chat_id=message_or_call.message.chat.id,
                                    text=tx.ROUTES_WITHOUT_DESCRIPTION)
-        # await message_or_call.answer(tx.ROUTES_WITHOUT_DESCRIPTION)
     else:
         try:
             start_time = db.dt.datetime.now()
@@ -184,8 +172,9 @@ async def show_routes_handler(message_or_call):
 
             end_time = db.dt.datetime.now()
 
-            td = end_time - start_time
-            text = (tx.GENERATION_TIME + str(td) + tx.TIME_UNITS)
+            time_generate_in_seconds = (end_time - start_time).total_seconds()
+
+            text = (tx.GENERATION_TIME + str(time_generate_in_seconds) + tx.TIME_UNITS)
             if isinstance(message_or_call, Message):
                 await bot.send_message(chat_id=message_or_call.chat.id,
                                        text=text)
@@ -193,9 +182,9 @@ async def show_routes_handler(message_or_call):
                 await message_or_call.answer(text)
 
             name = await get_neural_network_name(current_neural_network)
+
             db.add_statistic_generated(name,
-                                       get_datetime(db.dt.date.today(),
-                                                    str(td).split(".")[0]))
+                                       time_generate_in_seconds)
 
             if isinstance(message_or_call, Message):
                 await bot.send_photo(chat_id=message_or_call.chat.id,
@@ -233,6 +222,15 @@ async def show_routes_handler(message_or_call):
         else:
             await message_or_call.answer(text=tx.ROUTES_ANSWER,
                                          reply_markup=keyboard_markup)
+
+
+@dp.message(Command(tx.COMMAND_START))
+async def start(call: CallbackQuery):
+    await call.answer(tx.BOT_START,
+                      reply_markup=kb.start_kb)
+
+    await call.answer(text=tx.NEURO_SELECT,
+                      reply_markup=kb.neural_network_kb)
 
 
 @dp.message(Command(tx.COMMAND_SHOW_ROUTES))
@@ -285,11 +283,64 @@ async def next_route(call: CallbackQuery):
     await show_routes_handler(message)
 
 
-@dp.callback_query(F.data == tx.COMMAND_STATISTICS)
+@dp.message(lambda message: message.text == kb.BUTTON_STATS)
 async def get_statistics(message: Message):
     statistics_data = db.get_statistic()
-    await message.answer(tx.COMMAND_STATISTICS_TEXT
-                         + statistics_data)
+    text = ""
+
+    await message.answer(tx.COMMAND_STATISTICS_TEXT)
+    for stat in statistics_data:
+        text = stat.neural_network_name + ": \n"
+        if stat.time_generated is not None:
+            text += st.AVG_TIME_GENERATED_NAME + str(stat.time_generated)
+            text += "\n"
+        if stat.time_loaded is not None:
+            text += st.AVG_TIME_LOADED_NAME + str(stat.time_loaded)
+            text += "\n"
+        text += "\n"
+        await message.answer(text)
+        text = ""
+    # Разделение статистики по нейронным сетям
+    statistics_detailed_data = db.get_statistic_detailed()
+
+    lists_by_neural_networks = await st.get_lists_by_neural_networks(statistics_detailed_data)
+
+    (lists_time_generated,
+     lists_time_generated_indexes,
+     lists_time_loaded,
+     lists_time_loaded_indexes) = await st.get_time_generated_list_and_indexes(lists_by_neural_networks)
+
+    index = 0
+    for _ in lists_by_neural_networks:
+        list_time_generated = lists_time_generated[index]
+        list_time_generated_indexes = lists_time_generated_indexes[index]
+        list_time_loaded = lists_time_loaded[index]
+        list_time_loaded_indexes = lists_time_loaded_indexes[index]
+
+        graph_file_path = await st.get_create_graph(list_time_generated_indexes,
+                                                    list_time_generated,
+                                                    st.TIME_GENERATED_NAME,
+                                                    st.INDEX_NAME,
+                                                    st.TIME_GENERATED_NAME,
+                                                    list_time_generated_indexes,
+                                                    list_time_generated)
+        if isinstance(message, Message):
+            await bot.send_photo(chat_id=message.chat.id,
+                                 photo=FSInputFile(graph_file_path))
+
+        graph_file_path = await st.get_create_graph(list_time_loaded_indexes,
+                                                    list_time_loaded,
+                                                    st.TIME_LOADED_NAME,
+                                                    st.INDEX_NAME,
+                                                    st.TIME_LOADED_NAME,
+                                                    list_time_loaded_indexes,
+                                                    list_time_loaded)
+
+        if isinstance(message, Message):
+            await bot.send_photo(chat_id=message.chat.id,
+                                 photo=FSInputFile(graph_file_path))
+
+        index += 1
 
 
 async def main():

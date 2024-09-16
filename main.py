@@ -130,11 +130,13 @@ async def load_neural_network(neural_network_name: str,
     end_time = db.dt.datetime.now()
     time_load_in_seconds = (end_time - start_time).total_seconds()
 
-    await bot.send_message(chat_id=call.message.chat.id,
-                           text=tx.NEURO_INIT_TIME
-                           + str(time_load_in_seconds))
-    db.add_statistic_loaded(neural_network_name,
-                            time_load_in_seconds)
+    if st.SHOW_STATISTICS:
+        await bot.send_message(chat_id=call.message.chat.id,
+                               text=tx.NEURO_INIT_TIME
+                               + str(time_load_in_seconds))
+    if st.COLLECT_STATISTIC:
+        db.add_statistic_loaded(neural_network_name,
+                                time_load_in_seconds)
 
 
 async def call_to_message(call: CallbackQuery,
@@ -215,13 +217,15 @@ async def show_routes(message: Message):
             time_generate_in_seconds = (end_time - start_time).total_seconds()
 
             text = (tx.GENERATION_TIME + str(time_generate_in_seconds) + tx.TIME_UNITS)
+            if st.SHOW_STATISTICS:
+                await bot.send_message(chat_id=message.chat.id,
+                                       text=text)
 
-            await bot.send_message(chat_id=message.chat.id,
-                                   text=text)
+            if st.COLLECT_STATISTIC:
+                name = await get_neural_network_name(current_neural_network)
 
-            name = await get_neural_network_name(current_neural_network)
-            db.add_statistic_generated(name,
-                                       time_generate_in_seconds)
+                db.add_statistic_generated(name,
+                                           time_generate_in_seconds)
 
             await bot.send_photo(chat_id=message.chat.id,
                                  photo=FSInputFile(generate_image_path))

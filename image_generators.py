@@ -17,9 +17,9 @@ from diffusers import (StableCascadeCombinedPipeline,
                        DiffusionPipeline,
                        DDIMScheduler)
 from huggingface_hub import login
-from config import HAGGINGFAVE_TOKEN
+from config import HAGGINGFACE_TOKEN
 
-login(token=HAGGINGFAVE_TOKEN)
+login(token=HAGGINGFACE_TOKEN)
 
 IMAGE_PATH = "images/"
 IMAGE_NAME_SD = "image_sd.png"

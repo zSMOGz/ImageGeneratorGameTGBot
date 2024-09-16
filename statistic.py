@@ -7,7 +7,12 @@ AVG_TIME_LOADED_NAME = "Среднее время загрузки модели:
 TIME_GENERATED_NAME = "Время генерации изображения"
 TIME_LOADED_NAME = "Время загрузки нейросети"
 INDEX_NAME = "Номер измерения"
-
+# Показывать отметки на графике для текущих значений или отображать обычную шкалу с примерными значениями
+MANY_TICKETS = True
+# Показывать статистику по времени генерации изображения и загрузки нейросетей
+SHOW_STATISTICS = True
+# Собирать новую статистику по времени генерации изображения и загрузки нейросетей
+COLLECT_STATISTIC = True
 
 async def get_lists_by_neural_networks(statistics_detailed_data):
     """
@@ -102,8 +107,9 @@ async def create_graph(list_indexes,
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
-    plt.xticks(xticks)
-    plt.yticks(yticks)
+    if not MANY_TICKETS:
+        plt.xticks(xticks)
+        plt.yticks(yticks)
     plt.savefig(STATS_PATH + GRAPH_NAME)
     plt.clf()
 

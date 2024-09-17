@@ -10,7 +10,9 @@
 https://huggingface.co/stabilityai/stable-cascade/tree/main
 https://huggingface.co/kandinsky-community/kandinsky-2-1
 https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0
-Для этого нужно зарегистрироваться на сайте huggingface.co и зайти в 
+Для этого нужно зарегистрироваться на сайте huggingface.co и зайти в свою учётную
+запись в консоли python с помощью команды: 
+huggingface-cli login
 
 А также требуется создать файл config.py и указать токены Телеграм API и Haggingface:
 TG_API_TOKEN = ''

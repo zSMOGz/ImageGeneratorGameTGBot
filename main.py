@@ -173,7 +173,7 @@ async def call_to_message(call: CallbackQuery,
         text(str): Текст сообщения.
 
     Returns:
-        str: Сообщение.
+        Message: Сообщение.
     """
     message = Message(
         message_id=call.message.message_id,

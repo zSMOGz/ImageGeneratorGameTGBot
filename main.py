@@ -1,6 +1,7 @@
 # pip install aiogram
 import threading as th
 import asyncio
+import datetime as dt
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
@@ -23,8 +24,18 @@ dp = Dispatcher(storage=MemoryStorage())
 
 class ThreadWithResult(th.Thread):
     """
-    Класс для создания потоков, возвращающих результат выполнения функции
+    Класс для создания потоков, возвращающих результат выполнения функции.
+
+    Attributes:
+        group(object): Группа потока.
+        target(object): Функция, выполняемая в потоке.
+        name(str): Имя потока.
+        args(tuple): Аргументы функции.
+        kwargs(dict): Аргументы функции.
+        daemon(bool): Является ли этот поток потоком демона.
+        result(object): Результат выполнения функции.
     """
+
     def __init__(self,
                  group=None,
                  target=None,
@@ -33,6 +44,7 @@ class ThreadWithResult(th.Thread):
                  kwargs={},
                  *,
                  daemon=None):
+
         def function():
             self.result = target(*args,
                                  **kwargs)
@@ -43,17 +55,21 @@ class ThreadWithResult(th.Thread):
                          daemon=daemon)
 
 
-def build_routes_menu(buttons,
-                      count_columns,
+def build_routes_menu(buttons: list[InlineKeyboardButton],
+                      count_columns: int,
                       header_buttons=None,
                       footer_buttons=None):
     """
-    Функция создания меню, выравнивающая кнопки в зависимости от указанного количества столбцов
-    :param buttons: Массив кнопок
-    :param count_columns: Количество столбцов
-    :param header_buttons: Кнопки заголовка
-    :param footer_buttons: Кнопки под заголовком
-    :return: Выравненные кнопки
+    Функция создания меню, выравнивающая кнопки в зависимости от указанного количества столбцов.
+
+    Parameters:
+        buttons(list[InlineKeyboardButton]): Массив кнопок.
+        count_columns(int): Количество столбцов.
+        header_buttons: Кнопки заголовка.
+        footer_buttons: Кнопки под заголовком.
+
+    Returns:
+        list[list[InlineKeyboardButton]]: Выравненные кнопки.
     """
     menu = [buttons[i:i + count_columns] for i in range(0,
                                                         len(buttons),
@@ -68,9 +84,13 @@ def build_routes_menu(buttons,
 
 async def get_neural_network_name(neural_network):
     """
-    Функция возвращает имя нейронной сети из базы данных
-    :param neural_network: Нейронная сеть
-    :return: Имя нейронной сети
+    Получение имени нейронной сети из базы данных.
+
+    Parameters:
+        neural_network (ImageGenerator): Нейронная сеть.
+
+    Returns:
+        str: Имя нейронной сети. Если нейронная сеть не найдена, возвращается None.
     """
     _slash = '/'
     _minus = '-'
@@ -90,17 +110,21 @@ async def get_neural_network_name(neural_network):
 async def load_neural_network(neural_network_name: str,
                               call: CallbackQuery):
     """
-    Функция загрузки нейронной сети в память компьютера
-    :param neural_network_name: Название нейронной сети
-    :param call: Запрос
-    :return: Ошибка при загрузке
+    Загрузка нейронной сети в память.
+
+    Parameters:
+        neural_network_name (str): Название нейронной сети.
+        call (CallbackQuery): Запрос.
+
+    Returns:
+        str: Ошибка при загрузке.
     """
     global current_neural_network
     global current_point_map
 
     await call.answer(text=tx.NEURO_LOADING.format(neural_network_name))
 
-    start_time = db.dt.datetime.now()
+    start_time = dt.datetime.now()
     if neural_network_name == kb.BUTTON_STABLE_DIFFUSION_CALL:
         thread = ThreadWithResult(target=ig.StableDiffusion,
                                   args=())
@@ -127,13 +151,13 @@ async def load_neural_network(neural_network_name: str,
 
     await load_message.delete()
     current_neural_network = thread.result
-    end_time = db.dt.datetime.now()
+    end_time = dt.datetime.now()
     time_load_in_seconds = (end_time - start_time).total_seconds()
 
     if st.SHOW_STATISTICS:
         await bot.send_message(chat_id=call.message.chat.id,
                                text=tx.NEURO_INIT_TIME
-                               + str(time_load_in_seconds))
+                                    + str(time_load_in_seconds))
     if st.COLLECT_STATISTIC:
         db.add_statistic_loaded(neural_network_name,
                                 time_load_in_seconds)
@@ -142,10 +166,14 @@ async def load_neural_network(neural_network_name: str,
 async def call_to_message(call: CallbackQuery,
                           text: str):
     """
-    Функция преобразования сообщения из запроса
-    :param call: Запрос
-    :param text: Текст сообщения
-    :return: Сообщение
+    Преобразование запроса в сообщение.
+
+    Parameters:
+        call(CallbackQuery): Запрос.
+        text(str): Текст сообщения.
+
+    Returns:
+        str: Сообщение.
     """
     message = Message(
         message_id=call.message.message_id,
@@ -159,8 +187,11 @@ async def call_to_message(call: CallbackQuery,
 
 @dp.message(Command(tx.COMMAND_START))
 async def start(call: CallbackQuery):
-    """"
-    Функция запуска бота, предоставляет выбор нейронной сети и добавляет кнопку статистики
+    """
+    Запуск бота, при котором предоставляется выбор нейронной сети и добавляет кнопку статистики.
+
+    Parameters:
+        call(CallbackQuery): Запрос.
     """
     await call.answer(tx.BOT_START,
                       reply_markup=kb.stats_kb)
@@ -169,18 +200,23 @@ async def start(call: CallbackQuery):
                       reply_markup=kb.neural_network_kb)
 
 
-
 @dp.message(Command(tx.COMMAND_SHOW_ROUTES))
 async def show_routes(message: Message):
     """
-    Функция отображения маршрутов
-    :param message: Сообщение
+    Функция отображения маршрутов.
+
+    Parameters:
+        message(Message): Сообщение.
     """
     point_map = db.get_point_map(current_point_map)
     available_routes = db.get_available_routes(current_point_map)
 
     if point_map is None:
         await message.answer(tx.ROUTES_UNAVAILABLE)
+        return
+
+    if current_neural_network is None:
+        await message.answer(tx.NEURO_NOT_FOUND)
         return
 
     await bot.send_message(chat_id=message.chat.id,
@@ -193,7 +229,7 @@ async def show_routes(message: Message):
                                text=tx.ROUTES_WITHOUT_DESCRIPTION)
     else:
         try:
-            start_time = db.dt.datetime.now()
+            start_time = dt.datetime.now()
             thread = ThreadWithResult(target=current_neural_network.generate_image,
                                       args=(point_map.ai_description,))
             thread.start()
@@ -212,7 +248,7 @@ async def show_routes(message: Message):
             await load_message.delete()
             generate_image_path = thread.result
 
-            end_time = db.dt.datetime.now()
+            end_time = dt.datetime.now()
 
             time_generate_in_seconds = (end_time - start_time).total_seconds()
 
@@ -255,8 +291,10 @@ async def show_routes(message: Message):
 @dp.callback_query(F.data == kb.BUTTON_STABLE_DIFFUSION_CALL)
 async def stable_diffusion(call: CallbackQuery):
     """
-    Функция загрузки нейронной сети Stable Diffusion
-    :param call: Запрос
+    Загрузка нейронной сети Stable Diffusion.
+
+    Parameters:
+        call(CallbackQuery): Запрос.
     """
     await load_neural_network(kb.BUTTON_STABLE_DIFFUSION_CALL,
                               call)
@@ -269,8 +307,10 @@ async def stable_diffusion(call: CallbackQuery):
 @dp.callback_query(F.data == kb.BUTTON_KANDINSKY_CALL)
 async def kandinsky(call: CallbackQuery):
     """
-    Функция загрузки нейронной сети Kandinsky
-    :param call: Запрос
+    Загрузка нейронной сети Kandinsky.
+
+    Parameters:
+        call(CallbackQuery): Запрос.
     """
     await load_neural_network(kb.BUTTON_KANDINSKY_CALL,
                               call)
@@ -283,8 +323,10 @@ async def kandinsky(call: CallbackQuery):
 @dp.callback_query(F.data == kb.BUTTON_STABLE_CASCADE_CALL)
 async def stable_cascade(call: CallbackQuery):
     """
-    Функция загрузки нейронной сети Stable Cascade
-    :param call: Запрос
+    Загрузка нейронной сети Stable Cascade.
+
+    Parameters:
+        call(CallbackQuery): Запрос.
     """
     await load_neural_network(kb.BUTTON_STABLE_CASCADE_CALL,
                               call)
@@ -296,8 +338,10 @@ async def stable_cascade(call: CallbackQuery):
 @dp.callback_query()
 async def next_route(call: CallbackQuery):
     """
-    Функция перехода к следующему маршруту
-    :param call: Запрос
+    Переход к следующему маршруту.
+
+    Parameters:
+        call(CallbackQuery): Запрос.
     """
     global current_point_map
     current_point_map = call.data
@@ -311,8 +355,10 @@ async def next_route(call: CallbackQuery):
 @dp.message(lambda message: message.text == kb.BUTTON_STATS)
 async def get_statistics(message: Message):
     """
-    Статистика загрузки нейронных сетей, и времени создания изображений
-    :param message: Сообщение
+    Статистика загрузки нейронных сетей, и времени создания изображений.
+
+    Parameters:
+        message(Message): Сообщение.
     """
     statistics_data = db.get_statistic()
     text = ""
@@ -376,7 +422,7 @@ async def get_statistics(message: Message):
 
 async def main():
     """
-    Запуск бота
+    Запуск бота.
     """
     await bot.get_updates(timeout=100)
     await dp.start_polling(bot,

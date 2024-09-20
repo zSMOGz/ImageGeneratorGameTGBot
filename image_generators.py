@@ -1,13 +1,14 @@
-#pip install --upgrade huggingface_hub
-#huggingface-cli login
-#pip install diffusers
-#pip install transformers==4.22.1
-#pip install invisible_watermark accelerate safetensors
-#pip install 'huggingface_hub[cli,torch]'
-#pip install  а torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124
-#pip install --upgrade transformers accelerate
-#pip install SentencePiece
+# pip install --upgrade huggingface_hub
+# huggingface-cli login
+# pip install diffusers
+# pip install transformers==4.22.1
+# pip install invisible_watermark accelerate safetensors
+# pip install 'huggingface_hub[cli,torch]'
+# pip install  а torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124
+# pip install --upgrade transformers accelerate
+# pip install SentencePiece
 import os
+
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 import torch
@@ -42,8 +43,15 @@ IMAGE_WIDTH = 1024
 
 class ImageGenerator:
     """
-    Основной класс для генерации изображений
+    Основной класс для генерации изображений.
+
+    Attributes:
+        model_id: Имя модели.
+        pipe: Последовательность элементов модели.
+        image: Изображение.
+        image_name: Имя изображения.
     """
+
     def __init__(self,
                  model_id,
                  pipe,
@@ -54,19 +62,24 @@ class ImageGenerator:
         self.image_name = image_name
 
     def generate_image(self,
-                       prompt):
+                       prompt: str):
         """
-        Генерация изображения по текстовому описанию
-        :param prompt: Текстовое описание
-        :return: Путь к изображению на сервере
+        Генерация изображения по текстовому описанию.
+
+        Parameters:
+            prompt(srt): Текстовое описание, по которому генерируется изображение.
+
+        Returns:
+            str: Путь к изображению на сервере.
         """
         pass
 
 
 class StableDiffusion(ImageGenerator):
     """
-    Генератор изображений с использованием Stable Diffusion
+    Генератор изображений с использованием Stable Diffusion.
     """
+
     def __init__(self):
         self.model_id = NEURO_PATH + STABLE_DIFFUSION_PATH
         self.ddim = DDIMScheduler.from_pretrained(self.model_id,
@@ -90,7 +103,7 @@ class StableDiffusion(ImageGenerator):
                 prior_guidance_scale=PRIOR_GUIDANCE_SCALE,
                 height=IMAGE_HEIGHT,
                 width=IMAGE_WIDTH,
-                #guidance_scale=7.0,
+                # guidance_scale=7.0,
             ).images[0]
 
             image.save(IMAGE_PATH + self.image_name)
@@ -103,8 +116,9 @@ class StableDiffusion(ImageGenerator):
 
 class Kandinsky(ImageGenerator):
     """
-    Генератор изображений с использованием нейросети Kandinsky
+    Генератор изображений с использованием нейросети Kandinsky.
     """
+
     def __init__(self):
         self.model_id = NEURO_PATH + KANDINSKY_PATH
         self.pipe = AutoPipelineForText2Image.from_pretrained(self.model_id,
@@ -137,8 +151,9 @@ class Kandinsky(ImageGenerator):
 
 class StableCascade(ImageGenerator):
     """
-    Генератор изображений с использованием нейросети Stable Cascade
+    Генератор изображений с использованием нейросети Stable Cascade.
     """
+
     def __init__(self):
         self.model_id = NEURO_PATH + STABLE_CASCADE_PATH
         self.pipe = StableCascadeCombinedPipeline.from_pretrained(self.model_id,

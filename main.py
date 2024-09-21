@@ -6,7 +6,8 @@ import datetime as dt
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
 from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.types import Message, FSInputFile, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from aiogram.types import (Message, FSInputFile, InlineKeyboardMarkup,
+                           InlineKeyboardButton, CallbackQuery)
 
 import config as c
 import db
@@ -24,7 +25,8 @@ dp = Dispatcher(storage=MemoryStorage())
 
 class ThreadWithResult(th.Thread):
     """
-    Класс для создания потоков, возвращающих результат выполнения функции.
+    Класс для создания потоков, возвращающих результат выполнения
+    функции.
 
     Attributes:
         group(object): Группа потока.
@@ -60,7 +62,8 @@ def build_routes_menu(buttons: list[InlineKeyboardButton],
                       header_buttons=None,
                       footer_buttons=None):
     """
-    Функция создания меню, выравнивающая кнопки в зависимости от указанного количества столбцов.
+    Функция создания меню, выравнивающая кнопки в зависимости от
+    указанного количества столбцов.
 
     Parameters:
         buttons(list[InlineKeyboardButton]): Массив кнопок.
@@ -90,7 +93,8 @@ async def get_neural_network_name(neural_network):
         neural_network (ImageGenerator): Нейронная сеть.
 
     Returns:
-        str: Имя нейронной сети. Если нейронная сеть не найдена, возвращается None.
+        str: Имя нейронной сети. Если нейронная сеть не найдена,
+         возвращается None.
     """
     _slash = '/'
     _minus = '-'
@@ -103,7 +107,8 @@ async def get_neural_network_name(neural_network):
         if neural_network.model_id.find(_kandinsky) >= 0:
             return neural_network.model_id.split(_slash)[-1].split(_minus)[0]
         else:
-            parts_name = neural_network.model_id.split(_slash)[-1].split(_minus)
+            parts_name = (neural_network.model_id.split(_slash)[-1].
+                          split(_minus))
             return parts_name[0] + _underscore + parts_name[1]
 
 
@@ -188,7 +193,8 @@ async def call_to_message(call: CallbackQuery,
 @dp.message(Command(tx.COMMAND_START))
 async def start(call: CallbackQuery):
     """
-    Запуск бота, при котором предоставляется выбор нейронной сети и добавляет кнопку статистики.
+    Запуск бота, при котором предоставляется выбор нейронной сети и
+    добавляет кнопку статистики.
 
     Parameters:
         call(CallbackQuery): Запрос.
@@ -230,7 +236,8 @@ async def show_routes(message: Message):
     else:
         try:
             start_time = dt.datetime.now()
-            thread = ThreadWithResult(target=current_neural_network.generate_image,
+            thread = ThreadWithResult(target=current_neural_network.
+                                             generate_image,
                                       args=(point_map.ai_description,))
             thread.start()
 
@@ -252,7 +259,9 @@ async def show_routes(message: Message):
 
             time_generate_in_seconds = (end_time - start_time).total_seconds()
 
-            text = (tx.GENERATION_TIME + str(time_generate_in_seconds) + tx.TIME_UNITS)
+            text = (tx.GENERATION_TIME
+                    + str(time_generate_in_seconds)
+                    + tx.TIME_UNITS)
             if st.SHOW_STATISTICS:
                 await bot.send_message(chat_id=message.chat.id,
                                        text=text)
@@ -274,15 +283,17 @@ async def show_routes(message: Message):
     keyboard_buttons = []
 
     for route in available_routes:
-        keyboard_buttons.append(InlineKeyboardButton(text=route.name,
-                                                     callback_data=str(route.id)))
+        keyboard_buttons.append(
+            InlineKeyboardButton(text=route.name,
+                                 callback_data=str(route.id)))
 
     if keyboard_buttons is None:
         await bot.send_message(chat_id=message.chat.id,
                                text=tx.ROUTES_UNAVAILABLE)
     else:
-        keyboard_markup = InlineKeyboardMarkup(inline_keyboard=build_routes_menu(keyboard_buttons,
-                                                                                 1))
+        keyboard_markup = InlineKeyboardMarkup(
+            inline_keyboard=build_routes_menu(keyboard_buttons,
+                                              1))
         await bot.send_message(chat_id=message.chat.id,
                                text=tx.ROUTES_ANSWER,
                                reply_markup=keyboard_markup)
@@ -378,12 +389,14 @@ async def get_statistics(message: Message):
     # Разделение статистики по нейронным сетям
     statistics_detailed_data = db.get_statistic_detailed()
 
-    lists_by_neural_networks = await st.get_lists_by_neural_networks(statistics_detailed_data)
+    lists_by_neural_networks = await st.get_lists_by_neural_networks(
+        statistics_detailed_data)
 
     (lists_time_generated,
      lists_time_generated_indexes,
      lists_time_loaded,
-     lists_time_loaded_indexes) = await st.get_time_generated_list_and_indexes(lists_by_neural_networks)
+     lists_time_loaded_indexes) = await st.get_time_generated_list_and_indexes(
+        lists_by_neural_networks)
 
     index = 0
     for list in lists_by_neural_networks:
@@ -398,7 +411,9 @@ async def get_statistics(message: Message):
 
         graph_file_path = await st.create_graph(list_time_generated_indexes,
                                                 list_time_generated,
-                                                st.TIME_GENERATED_NAME + " " + neural_network_name,
+                                                st.TIME_GENERATED_NAME
+                                                + " "
+                                                + neural_network_name,
                                                 st.INDEX_NAME,
                                                 st.TIME_GENERATED_NAME,
                                                 list_time_generated_indexes,
@@ -408,7 +423,9 @@ async def get_statistics(message: Message):
 
         graph_file_path = await st.create_graph(list_time_loaded_indexes,
                                                 list_time_loaded,
-                                                st.TIME_LOADED_NAME + " " + neural_network_name,
+                                                st.TIME_LOADED_NAME
+                                                + " "
+                                                + neural_network_name,
                                                 st.INDEX_NAME,
                                                 st.TIME_LOADED_NAME,
                                                 list_time_loaded_indexes,

@@ -4,21 +4,21 @@
 # pip install transformers==4.22.1
 # pip install invisible_watermark accelerate safetensors
 # pip install 'huggingface_hub[cli,torch]'
-# pip install  а torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124
+# pip install  а torchvision torchaudio
+#   --extra-index-url https://download.pytorch.org/whl/cu124
 # pip install --upgrade transformers accelerate
 # pip install SentencePiece
 import os
-
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
-
 import torch
 
-from diffusers import (StableCascadeCombinedPipeline,
-                       AutoPipelineForText2Image,
+from diffusers import (StableCascadeCombinedPipeline as scPipeline,
+                       AutoPipelineForText2Image as autoPipeline,
                        DiffusionPipeline,
                        DDIMScheduler)
 from huggingface_hub import login
 from config import HAGGINGFACE_TOKEN
+
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 login(token=HAGGINGFACE_TOKEN)
 
@@ -67,7 +67,8 @@ class ImageGenerator:
         Генерация изображения по текстовому описанию.
 
         Parameters:
-            prompt(srt): Текстовое описание, по которому генерируется изображение.
+            prompt(srt): Текстовое описание, по которому генерируется
+            изображение.
 
         Returns:
             str: Путь к изображению на сервере.
@@ -86,7 +87,8 @@ class StableDiffusion(ImageGenerator):
                                                   subfolder="scheduler")
         self.pipe = DiffusionPipeline.from_pretrained(self.model_id,
                                                       ddim=self.ddim,
-                                                      torch_dtype=torch.float16)
+                                                      torch_dtype=torch.float16
+                                                      )
         self.pipe = self.pipe.to(CUDA)
         super().__init__(self.model_id,
                          self.pipe,
@@ -121,8 +123,8 @@ class Kandinsky(ImageGenerator):
 
     def __init__(self):
         self.model_id = NEURO_PATH + KANDINSKY_PATH
-        self.pipe = AutoPipelineForText2Image.from_pretrained(self.model_id,
-                                                              torch_dtype=torch.float16)
+        self.pipe = autoPipeline.from_pretrained(self.model_id,
+                                                 torch_dtype=torch.float16)
         self.pipe = self.pipe.to(CUDA)
         super().__init__(self.model_id,
                          self.pipe,
@@ -156,9 +158,9 @@ class StableCascade(ImageGenerator):
 
     def __init__(self):
         self.model_id = NEURO_PATH + STABLE_CASCADE_PATH
-        self.pipe = StableCascadeCombinedPipeline.from_pretrained(self.model_id,
-                                                                  variant="bf16",
-                                                                  torch_dtype=torch.bfloat16)
+        self.pipe = scPipeline.from_pretrained(self.model_id,
+                                               variant="bf16",
+                                               torch_dtype=torch.bfloat16)
         self.pipe = self.pipe.to(CUDA)
         super().__init__(self.model_id,
                          self.pipe,

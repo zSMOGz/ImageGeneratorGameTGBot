@@ -21,7 +21,8 @@ class PointMap(BaseModel):
     Attributes:
         name(str): Название локации.
         description(str): Описание локации.
-        ai_description(str): Описание локации для генерации изображений на английском языке.
+        ai_description(str): Описание локации для генерации изображений
+        на английском языке.
     """
     name = CharField(column_name='name')
     description = TextField(column_name='description')
@@ -46,7 +47,8 @@ class Route(BaseModel):
 
 class Statistic(BaseModel):
     """
-    Статистика по времени генерации изображений и времени загрузки нейронных сетей.
+    Статистика по времени генерации изображений и времени загрузки
+    нейронных сетей.
 
     Attributes:
         neural_network_name(str): Название нейронной сети.
@@ -68,7 +70,8 @@ def get_available_routes(point_map_id):
     Возвращает список доступных точек на карте из указанной точки.
 
     Parameters:
-        point_map_id(int): Точка на карте, из которой нужно искать доступные маршруты.
+        point_map_id(int): Точка на карте, из которой нужно искать
+        доступные маршруты.
 
     Returns:
         list[PointMap]: Список доступных маршрутов из указанной точки.
@@ -83,7 +86,8 @@ def get_available_routes(point_map_id):
                             join(PointMap, on=join_condition).
                             where((PointMap.id != point_map_id)
                                   & ((Route.point_map_id == point_map_id)
-                                     | (Route.another_point_map_id == point_map_id))).
+                                     | (Route.another_point_map_id ==
+                                        point_map_id))).
                             objects())
         return available_routes
     except DoesNotExist as de:
@@ -110,15 +114,19 @@ def get_point_map(point_map_id: int):
 
 def get_statistic():
     """
-    Возвращает статистику по времени генерации изображений и времени загрузки нейронных сетей.
+    Возвращает статистику по времени генерации изображений и времени
+    загрузки нейронных сетей.
 
     Returns:
-        Any: Статистика по времени генерации изображений и времени загрузки нейронных сетей.
+        Any: Статистика по времени генерации изображений и времени
+        загрузки нейронных сетей.
     """
     try:
         statistic = (Statistic.select(Statistic.neural_network_name,
-                                      peewee.fn.AVG(Statistic.time_generated).alias('time_generated'),
-                                      peewee.fn.AVG(Statistic.time_loaded).alias('time_loaded'))
+                                      peewee.fn.AVG(Statistic.time_generated)
+                                      .alias('time_generated'),
+                                      peewee.fn.AVG(Statistic.time_loaded)
+                                      .alias('time_loaded'))
                      .group_by(Statistic.neural_network_name)
                      .order_by(Statistic.neural_network_name)
                      .objects())
@@ -130,11 +138,14 @@ def get_statistic():
 
 def get_statistic_detailed():
     """
-    Возвращает детальную статистику по времени генерации изображений и времени загрузки нейронных сетей.
-    Время генерации каждого изображения, и время загрузки каждой нейронной сети.
+    Возвращает детальную статистику по времени генерации изображений и
+    времени загрузки нейронных сетей.
+    Время генерации каждого изображения, и время загрузки каждой
+    нейронной сети.
 
     Returns:
-        Any: Детальная статистика по времени генерации изображений и времени загрузки нейронных сетей.
+        Any: Детальная статистика по времени генерации изображений и
+        времени загрузки нейронных сетей.
     """
     try:
         statistic = (Statistic.select(Statistic.neural_network_name,

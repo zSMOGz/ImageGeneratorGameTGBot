@@ -1,4 +1,3 @@
-# pip install aiogram
 import threading as th
 import asyncio
 import datetime as dt

@@ -1,13 +1,5 @@
-# pip install --upgrade huggingface_hub
+# Для входа в huggingface.co ввести учётные данные через команду:
 # huggingface-cli login
-# pip install diffusers
-# pip install transformers==4.22.1
-# pip install invisible_watermark accelerate safetensors
-# pip install 'huggingface_hub[cli,torch]'
-# pip install  а torchvision torchaudio
-#   --extra-index-url https://download.pytorch.org/whl/cu124
-# pip install --upgrade transformers accelerate
-# pip install SentencePiece
 import os
 import torch
 

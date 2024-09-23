@@ -24,8 +24,8 @@ HAGGINGFACE_TOKEN = ''
 
 Пример работы:
 1. Выбор нейросети
-![alt text](https://github.com/zSMOGz/ImageGeneratorGameTGBot/tree/main/examples/example0.png)
+![Image 1](./examples/example0.png)
 2. Пример локации 1
-![alt text](https://github.com/zSMOGz/ImageGeneratorGameTGBot/tree/main/examples/example1.png)
+![Image 2](./examples/example1.png)
 3. Пример локации 2
-![alt text](https://github.com/zSMOGz/ImageGeneratorGameTGBot/tree/main/examples/example2.png)
+![Image 3](./examples/example2.png)

@@ -1,6 +1,5 @@
 # Для входа в huggingface.co ввести учётные данные через команду:
 # huggingface-cli login
-import os
 import torch
 
 from diffusers import (StableCascadeCombinedPipeline as scPipeline,
@@ -9,8 +8,6 @@ from diffusers import (StableCascadeCombinedPipeline as scPipeline,
                        DDIMScheduler)
 from huggingface_hub import login
 from config import HAGGINGFACE_TOKEN
-
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 login(token=HAGGINGFACE_TOKEN)
 

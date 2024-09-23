@@ -1,10 +1,10 @@
 Телеграм бот, который позволяет перемещаться по предварительно 
-описанным локациям, которые связаны между собой. При перемещении на 
+описанным локациям, связанными между собой. При перемещении на 
 локацию генерируется изображение, соответсвующее описанию локации. 
 Картинки создаются одной из трёх нейросетей на выбор: Stable Diffusion, 
 Kandinsky или Stable Cascade.
 
-При загрузки нейросети в память записывается и выводится время загрузки 
+При загрузке нейросети в память записывается и выводится время загрузки 
 для статистики, а также время генерации изображений. Для вывода 
 статистики есть закреплённая внизу.
 
@@ -21,3 +21,14 @@ huggingface-cli login
 и Haggingface:
 TG_API_TOKEN = ''
 HAGGINGFACE_TOKEN = ''
+
+Пример работы:
+1. Выбор нейросети
+![alt text]
+(https://github.com/zSMOGz/ImageGeneratorGameTGBot/tree/main/example0)
+2. Пример локации 1
+![alt text]
+(https://github.com/zSMOGz/ImageGeneratorGameTGBot/tree/main/example1)
+3. Пример локации 2
+![alt text]
+(https://github.com/zSMOGz/ImageGeneratorGameTGBot/tree/main/example2)

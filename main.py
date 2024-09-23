@@ -45,6 +45,7 @@ class ThreadWithResult(th.Thread):
                  kwargs={},
                  *,
                  daemon=None):
+        self.result = None
 
         def function():
             self.result = target(*args,

@@ -14,7 +14,7 @@ Kandinsky или Stable Cascade.
 neuro_models.
 - https://huggingface.co/stabilityai/stable-cascade/tree/main
 - https://huggingface.co/kandinsky-community/kandinsky-2-1
-- https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0
+- https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0 <br />
 Для этого нужно зарегистрироваться на сайте huggingface.co и зайти в 
 свою учётную запись в консоли python с помощью команды: <br />
 ```

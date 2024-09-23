@@ -21,7 +21,6 @@ current_point_map = 1
 bot = Bot(token=c.TG_API_TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
 
-
 class ThreadWithResult(th.Thread):
     """
     Класс для создания потоков, возвращающих результат выполнения
